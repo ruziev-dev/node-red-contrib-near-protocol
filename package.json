@@ -1,0 +1,29 @@
+{
+  "name": "node-red-near-protocol",
+  "version": "0.0.1",
+  "description": "Allows to run smart-contract methods on Node RED",
+  "main": "main.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "nodered",
+    "node-red",
+    "near-protocol",
+    "blockchain",
+    "smart-contract"
+  ],
+  "author": "Timur Ruziev <ruziev.dev@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "near-api-js": "^1.1.0"
+  },
+  "node-red": {
+    "nodes": {
+      "Contract": "Contract.js"
+    }
+  },
+  "devDependencies": {
+    "mocha": "^9.1.3"
+  }
+}

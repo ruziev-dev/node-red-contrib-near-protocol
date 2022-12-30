@@ -11,19 +11,302 @@
         },
       ],
     });
+
+    var node = this;
+    var payloadType = node.payloadType;
+
+    if (node.payloadType == null) {
+      if (node.payload == "") {
+        payloadType = "date";
+      } else {
+        payloadType = "str";
+      }
+    } else if (node.payloadType === "string" || node.payloadType === "none") {
+      payloadType = "str";
+    }
+
+    var eList = $("#node-input-property-container")
+      .css("min-height", "120px")
+      .css("max-height", "400px")
+      .css("min-width", "450px");
+
+    eList.editableList({
+      buttons: [],
+      addItem: function (container, i, opt) {
+        var prop = opt;
+        if (!prop.hasOwnProperty("p")) {
+          prop = { p: "", v: "", vt: "str" };
+        }
+        container.css({
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+        });
+        var row = $("<div/>").appendTo(container);
+
+        var propertyName = $("<input/>", {
+          class: "node-input-prop-property-name",
+          type: "text",
+        })
+          .css("width", "30%")
+          .appendTo(row)
+          .typedInput({ types: ["msg"] });
+
+        $("<div/>", { style: "display:inline-block; padding:0px 6px;" })
+          .text("=")
+          .appendTo(row);
+
+        var propertyValue = $("<input/>", {
+          class: "node-input-prop-property-value",
+          type: "text",
+        })
+          .css("width", "calc(70% - 30px)")
+          .appendTo(row)
+          .typedInput({
+            default: prop.vt || "str",
+            types: [
+              "flow",
+              "global",
+              "str",
+              "num",
+              "bool",
+              "json",
+              "bin",
+              "date",
+              "jsonata",
+              "env",
+              "msg",
+            ],
+          });
+
+        propertyName.typedInput("value", prop.p);
+        propertyValue.typedInput("value", prop.v);
+      },
+      removable: true,
+      sortable: true,
+    });
+
+    if (RED.nodes.subflow(node.z)) {
+      $("#node-inject-test-inject-button").attr("disabled", true);
+    }
+
+    if (!node.props) {
+      var payload = {
+        p: "payload",
+        v: node.payload ? node.payload : "",
+        vt: payloadType ? payloadType : "date",
+      };
+      var topic = {
+        p: "topic",
+        v: node.topic ? node.topic : "",
+        vt: "str",
+      };
+      node.props = [payload, topic];
+    }
+
+    for (var i = 0; i < node.props.length; i++) {
+      var prop = node.props[i];
+      var newProp = { p: prop.p, v: prop.v, vt: prop.vt };
+      if (newProp.v === undefined) {
+        if (prop.p === "payload") {
+          newProp.v = node.payload ? node.payload : "";
+          newProp.vt = payloadType ? payloadType : "date";
+        } else if (prop.p === "topic" && prop.vt === "str") {
+          newProp.v = node.topic ? node.topic : "";
+        }
+      }
+      if (newProp.vt === "string") {
+        // Fix bug in pre 2.1 where an old Inject node might have
+        // a migrated rule with type 'string' not 'str'
+        newProp.vt = "str";
+      }
+      eList.editableList("addItem", newProp);
+    }
   };
+
+  function resizeDialog(size) {
+    size = size || { height: $(".red-ui-tray-content form").height() };
+    var rows = $(
+      "#dialog-form>div:not(.node-input-property-container-row):visible"
+    );
+    var height = size.height;
+    for (var i = 0; i < rows.length; i++) {
+      height -= $(rows[i]).outerHeight(true);
+    }
+    var editorRow = $("#dialog-form>div.node-input-property-container-row");
+    height -=
+      parseInt(editorRow.css("marginTop")) +
+      parseInt(editorRow.css("marginBottom"));
+    height += 16;
+    $("#node-input-property-container").editableList("height", height);
+  }
+  /** Retrieve editableList items (refactored for re-use in the form inject button)*/
+  function getProps(el, legacy) {
+    var result = {
+      props: [],
+    };
+    el.each(function (i) {
+      var prop = $(this);
+      var p = {
+        p: prop.find(".node-input-prop-property-name").typedInput("value"),
+      };
+      if (p.p) {
+        p.v = prop.find(".node-input-prop-property-value").typedInput("value");
+        p.vt = prop.find(".node-input-prop-property-value").typedInput("type");
+        if (legacy) {
+          if (p.p === "payload") {
+            // save payload to old "legacy" property
+            result.payloadType = p.vt;
+            result.payload = p.v;
+            delete p.v;
+            delete p.vt;
+          } else if (p.p === "topic" && p.vt === "str") {
+            result.topic = p.v;
+            delete p.v;
+          }
+        }
+        result.props.push(p);
+      }
+    });
+    return result;
+  }
+  /** Perform inject, optionally sending a custom msg (refactored for re-use in the form inject button)*/
+  function doInject(node, customMsg) {
+    var label = node._def.label.call(
+      node,
+      customMsg ? customMsg.__user_inject_props__ : undefined
+    );
+    if (label.length > 30) {
+      label = label.substring(0, 50) + "...";
+    }
+    label = label
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    $.ajax({
+      url: "inject/" + node.id,
+      type: "POST",
+      data: JSON.stringify(customMsg || {}),
+      contentType: "application/json; charset=utf-8",
+      success: function (resp) {
+        RED.notify(node._("inject.success", { label: label }), {
+          type: "success",
+          id: "inject",
+          timeout: 2000,
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status == 404) {
+          RED.notify(
+            node._("common.notification.error", {
+              message: node._("common.notification.errors.not-deployed"),
+            }),
+            "error"
+          );
+        } else if (jqXHR.status == 500) {
+          RED.notify(
+            node._("common.notification.error", {
+              message: node._("inject.errors.failed"),
+            }),
+            "error"
+          );
+        } else if (jqXHR.status == 0) {
+          RED.notify(
+            node._("common.notification.error", {
+              message: node._("common.notification.errors.no-response"),
+            }),
+            "error"
+          );
+        } else {
+          RED.notify(
+            node._("common.notification.error", {
+              message: node._("common.notification.errors.unexpected", {
+                status: jqXHR.status,
+                message: textStatus,
+              }),
+            }),
+            "error"
+          );
+        }
+      },
+    });
+  }
 
   RED.nodes.registerType("NearContract", {
     category: "Near Protocol",
     defaults: {
       network: { value: "", required: true },
       contract: { value: "", required: true },
+      accountId: { value: "", required: true },
       userPrivateKey: { value: "", required: true },
+
+      props: {
+        value: [{ p: "payload" }, { p: "topic", vt: "str" }],
+        validate: function (v, opt) {
+          if (!v || v.length === 0) {
+            return true;
+          }
+          for (var i = 0; i < v.length; i++) {
+            if (/msg|flow|global/.test(v[i].vt)) {
+              if (!RED.utils.validatePropertyExpression(v[i].v)) {
+                return RED._("node-red:inject.errors.invalid-prop", {
+                  prop: "msg." + v[i].p,
+                  error: v[i].v,
+                });
+              }
+            } else if (v[i].vt === "jsonata") {
+              try {
+                jsonata(v[i].v);
+              } catch (e) {
+                return RED._("node-red:inject.errors.invalid-jsonata", {
+                  prop: "msg." + v[i].p,
+                  error: e.message,
+                });
+              }
+            } else if (v[i].vt === "json") {
+              try {
+                JSON.parse(v[i].v);
+              } catch (e) {
+                return RED._("node-red:inject.errors.invalid-json", {
+                  prop: "msg." + v[i].p,
+                  error: e.message,
+                });
+              }
+            } else if (v[i].vt === "num") {
+              if (!/^[+-]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(v[i].v)) {
+                return RED._("node-red:inject.errors.invalid-prop", {
+                  prop: "msg." + v[i].p,
+                  error: v[i].v,
+                });
+              }
+            }
+          }
+          return true;
+        },
+      },
     },
     inputs: 1,
     outputs: 1,
-    icon: "redis.png",
+    icon: "near.png",
     oneditprepare,
+    oneditsave: function () {
+      var items = $("#node-input-property-container").editableList("items");
+      delete this.payloadType;
+      delete this.payload;
+      this.topic = "";
+      var result = getProps(items, true);
+      this.props = result.props;
+      if (result.hasOwnProperty("payloadType")) {
+        this.payloadType = result.payloadType;
+      }
+      if (result.hasOwnProperty("payload")) {
+        this.payload = result.payload;
+      }
+      if (result.hasOwnProperty("topic")) {
+        this.topic = result.topic;
+      }
+      console.log(result)
+    },
+    oneditresize: resizeDialog,
     label: function () {
       const isPrettyName = this.contract?.includes(".near");
       return isPrettyName ? this.contract : "NearContract";
@@ -39,10 +322,12 @@
     <input type="hidden" id="node-input-network" />
   </div>
 
+  <h3>Near Account Credentials</h3>
+
   <div class="form-row">
-    <i class="fa fa-file-text-o"></i>
-    <label for="node-input-contract"> Contract</label>
-    <input type="text" id="node-input-contract" placeholder="Contract" />
+    <i class="fa fa-user"></i>
+    <label for="node-input-accountId"> Account</label>
+    <input type="text" id="node-input-accountId" placeholder="Account" />
   </div>
 
   <div class="form-row">
@@ -53,5 +338,26 @@
       id="node-input-userPrivateKey"
       placeholder="User Private Key"
     />
+  </div>
+
+  <h3>Near Contract Details</h3>
+
+  <div class="form-row">
+    <i class="fa fa-file-text-o"></i>
+    <label for="node-input-contract"> Contract</label>
+    <input type="text" id="node-input-contract" placeholder="Contract" />
+  </div>
+
+  <div>
+    <label for="node-input-methods-editor">
+      <span> <i class="fa fa-wrench"></i>  Contract Methods </span>
+    </label>
+  </div>
+
+  <div
+    class="form-row node-input-property-container-row"
+    style="height: 350px;"
+  >
+    <ol id="node-input-property-container"></ol>
   </div>
 </script>

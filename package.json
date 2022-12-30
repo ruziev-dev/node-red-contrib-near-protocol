@@ -1,6 +1,6 @@
 {
   "name": "node-red-near-protocol",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Allows to run smart-contract methods on Node RED",
   "main": "main.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "node-red": {
     "nodes": {
-      "Contract": "Contract.js"
+      "NearContract": "NearContract.js"
     }
   },
   "devDependencies": {

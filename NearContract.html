@@ -1,0 +1,57 @@
+<script type="text/javascript">
+  const oneditprepare = function () {
+    $("#node-input-network").typedInput({
+      types: [
+        {
+          value: "network",
+          options: [
+            { value: "testnet", label: "testnet" },
+            { value: "mainnet", label: "mainnet" },
+          ],
+        },
+      ],
+    });
+  };
+
+  RED.nodes.registerType("NearContract", {
+    category: "Near Protocol",
+    defaults: {
+      network: { value: "", required: true },
+      contract: { value: "", required: true },
+      userPrivateKey: { value: "", required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "redis.png",
+    oneditprepare,
+    label: function () {
+      const isPrettyName = this.contract?.includes(".near");
+      return isPrettyName ? this.contract : "NearContract";
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="NearContract">
+  <div class="form-row">
+    <i class="fa fa-plug"></i>
+    <label for="node-input-network"> Network</label>
+    <input type="hidden" id="node-input-network" placeholder="Network" />
+    <input type="hidden" id="node-input-network" />
+  </div>
+
+  <div class="form-row">
+    <i class="fa fa-file-text-o"></i>
+    <label for="node-input-contract"> Contract</label>
+    <input type="text" id="node-input-contract" placeholder="Contract" />
+  </div>
+
+  <div class="form-row">
+    <i class="fa fa-user-secret"></i>
+    <label for="node-input-userPrivateKey"> Private Key</label>
+    <input
+      type="password"
+      id="node-input-userPrivateKey"
+      placeholder="User Private Key"
+    />
+  </div>
+</script>

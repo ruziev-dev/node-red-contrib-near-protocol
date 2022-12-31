@@ -12,10 +12,6 @@
       ],
     });
 
-    $("#node-input-userPrivateKey").typedInput({
-      types: ["cred"],
-    });
-
     var node = this;
     var payloadType = node.payloadType;
 
@@ -39,7 +35,7 @@
       addItem: function (container, i, opt) {
         var prop = opt;
         if (!prop.hasOwnProperty("p")) {
-          prop = { p: "", v: "" /* , vt: "str" */ };
+          prop = { p: "", v: "", vt: "str" };
         }
         container.css({
           overflow: "hidden",
@@ -56,7 +52,7 @@
           .typedInput({
             types: [
               {
-                value: "view",
+                value: "type",
                 options: [
                   { value: "view", label: "view" },
                   { value: "call", label: "call" },
@@ -64,6 +60,7 @@
               },
             ],
           });
+        //.typedInput({ types: ["msg"] });
 
         $("<div/>", { style: "display:inline-block; padding:0px 6px;" })
           .text(" ")
@@ -75,8 +72,22 @@
         })
           .css("width", "calc(70% - 30px)")
           .appendTo(row)
+
           .typedInput({
-            types: ["str"],
+            default: prop.vt || "str",
+            types: [
+              "flow",
+              "global",
+              "str",
+              "num",
+              "bool",
+              "json",
+              "bin",
+              "date",
+              "jsonata",
+              "env",
+              "msg",
+            ],
           });
 
         propertyName.typedInput("value", prop.p);
@@ -94,24 +105,24 @@
       var payload = {
         p: "payload",
         v: node.payload ? node.payload : "",
-        //vt: payloadType ? payloadType : "date",
+        vt: payloadType ? payloadType : "date",
       };
       var topic = {
         p: "topic",
         v: node.topic ? node.topic : "",
-        //vt: "str",
+        vt: "str",
       };
       node.props = [payload, topic];
     }
 
     for (var i = 0; i < node.props.length; i++) {
       var prop = node.props[i];
-      var newProp = { p: prop.p, v: prop.v /* , vt: prop.vt */ };
-      /* if (newProp.v === undefined) {
+      var newProp = { p: prop.p, v: prop.v, vt: prop.vt };
+      if (newProp.v === undefined) {
         if (prop.p === "payload") {
           newProp.v = node.payload ? node.payload : "";
-          //newProp.vt = payloadType ? payloadType : "date";
-        } else if (prop.p === "topic"  && prop.vt === "str" ) {
+          newProp.vt = payloadType ? payloadType : "date";
+        } else if (prop.p === "topic" && prop.vt === "str") {
           newProp.v = node.topic ? node.topic : "";
         }
       }
@@ -119,7 +130,7 @@
         // Fix bug in pre 2.1 where an old Inject node might have
         // a migrated rule with type 'string' not 'str'
         newProp.vt = "str";
-      } */
+      }
       eList.editableList("addItem", newProp);
     }
   };
@@ -140,6 +151,7 @@
     height += 16;
     $("#node-input-property-container").editableList("height", height);
   }
+  /** Retrieve editableList items (refactored for re-use in the form inject button)*/
   function getProps(el, legacy) {
     var result = {
       props: [],
@@ -151,17 +163,18 @@
       };
       if (p.p) {
         p.v = prop.find(".node-input-prop-property-value").typedInput("value");
+        p.vt = prop.find(".node-input-prop-property-value").typedInput("type");
         if (legacy) {
           if (p.p === "payload") {
             // save payload to old "legacy" property
-            //result.payloadType = p.vt;
+            result.payloadType = p.vt;
             result.payload = p.v;
             delete p.v;
-            //delete p.vt;
-          } /* else if (p.p === "topic" && p.vt === "str") {
+            delete p.vt;
+          } else if (p.p === "topic" && p.vt === "str") {
             result.topic = p.v;
             delete p.v;
-          } */
+          }
         }
         result.props.push(p);
       }
@@ -178,8 +191,48 @@
       userPrivateKey: { value: "", required: true },
 
       props: {
-        value: [{ p: "view", v: "get_contract_state" }],
-        validate: (rows) => rows?.every((method) => !!(method.p && method.v)),
+        value: [{ p: "payload" }, { p: "topic", vt: "str" }],
+        validate: function (v, opt) {
+          if (!v || v.length === 0) {
+            return true;
+          }
+          for (var i = 0; i < v.length; i++) {
+            if (/msg|flow|global/.test(v[i].vt)) {
+              if (!RED.utils.validatePropertyExpression(v[i].v)) {
+                return RED._("node-red:inject.errors.invalid-prop", {
+                  prop: "msg." + v[i].p,
+                  error: v[i].v,
+                });
+              }
+            } else if (v[i].vt === "jsonata") {
+              try {
+                jsonata(v[i].v);
+              } catch (e) {
+                return RED._("node-red:inject.errors.invalid-jsonata", {
+                  prop: "msg." + v[i].p,
+                  error: e.message,
+                });
+              }
+            } else if (v[i].vt === "json") {
+              try {
+                JSON.parse(v[i].v);
+              } catch (e) {
+                return RED._("node-red:inject.errors.invalid-json", {
+                  prop: "msg." + v[i].p,
+                  error: e.message,
+                });
+              }
+            } else if (v[i].vt === "num") {
+              if (!/^[+-]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(v[i].v)) {
+                return RED._("node-red:inject.errors.invalid-prop", {
+                  prop: "msg." + v[i].p,
+                  error: v[i].v,
+                });
+              }
+            }
+          }
+          return true;
+        },
       },
     },
     inputs: 1,
@@ -231,7 +284,7 @@
     <i class="fa fa-user-secret"></i>
     <label for="node-input-userPrivateKey"> Private Key</label>
     <input
-      type="text"
+      type="password"
       id="node-input-userPrivateKey"
       placeholder="User Private Key"
     />

@@ -26,13 +26,6 @@ module.exports = function (RED) {
       nearConnectionCfg = near_config[config.network];
       console.log(JSON.stringify(config));
 
-      //this.context()
-
-      var flowContext = this.context().flow;
-
-      var globalContext = this.context().global;
-      console.log({ flowContext, globalContext });
-
       initNearKeys().catch((error) => setError(error));
 
       node.on("input", onInputAction);

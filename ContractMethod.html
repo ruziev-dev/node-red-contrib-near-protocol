@@ -1,267 +1,94 @@
 <script type="text/javascript">
-  const oneditprepare = function () {
-    $("#node-input-network").typedInput({
-      types: [
-        {
-          value: "network",
-          options: [
-            { value: "testnet", label: "testnet" },
-            { value: "mainnet", label: "mainnet" },
-          ],
-        },
-      ],
-    });
-
-    var node = this;
-    var payloadType = node.payloadType;
-
-    if (node.payloadType == null) {
-      if (node.payload == "") {
-        payloadType = "date";
-      } else {
-        payloadType = "str";
-      }
-    } else if (node.payloadType === "string" || node.payloadType === "none") {
-      payloadType = "str";
-    }
-
-    var eList = $("#node-input-property-container")
-      .css("min-height", "120px")
-      .css("max-height", "400px")
-      .css("min-width", "450px");
-
-    eList.editableList({
-      buttons: [],
-      addItem: function (container, i, opt) {
-        var prop = opt;
-        if (!prop.hasOwnProperty("p")) {
-          prop = { p: "", v: "", vt: "str" };
-        }
-        container.css({
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-        });
-        var row = $("<div/>").appendTo(container);
-
-        var propertyName = $("<input/>", {
-          class: "node-input-prop-property-name",
-          type: "text",
-        })
-          .css("width", "30%")
-          .appendTo(row)
-          .typedInput({
-            types: [
-              {
-                value: "type",
-                options: [
-                  { value: "view", label: "view" },
-                  { value: "call", label: "call" },
-                ],
-              },
-            ],
-          });
-        //.typedInput({ types: ["msg"] });
-
-        $("<div/>", { style: "display:inline-block; padding:0px 6px;" })
-          .text(" ")
-          .appendTo(row);
-
-        var propertyValue = $("<input/>", {
-          class: "node-input-prop-property-value",
-          type: "text",
-        })
-          .css("width", "calc(70% - 30px)")
-          .appendTo(row)
-
-          .typedInput({
-            default: prop.vt || "str",
-            types: [
-              "flow",
-              "global",
-              "str",
-              "num",
-              "bool",
-              "json",
-              "bin",
-              "date",
-              "jsonata",
-              "env",
-              "msg",
-            ],
-          });
-
-        propertyName.typedInput("value", prop.p);
-        propertyValue.typedInput("value", prop.v);
-      },
-      removable: true,
-      sortable: true,
-    });
-
-    if (RED.nodes.subflow(node.z)) {
-      $("#node-inject-test-inject-button").attr("disabled", true);
-    }
-
-    if (!node.props) {
-      var payload = {
-        p: "payload",
-        v: node.payload ? node.payload : "",
-        vt: payloadType ? payloadType : "date",
-      };
-      var topic = {
-        p: "topic",
-        v: node.topic ? node.topic : "",
-        vt: "str",
-      };
-      node.props = [payload, topic];
-    }
-
-    for (var i = 0; i < node.props.length; i++) {
-      var prop = node.props[i];
-      var newProp = { p: prop.p, v: prop.v, vt: prop.vt };
-      if (newProp.v === undefined) {
-        if (prop.p === "payload") {
-          newProp.v = node.payload ? node.payload : "";
-          newProp.vt = payloadType ? payloadType : "date";
-        } else if (prop.p === "topic" && prop.vt === "str") {
-          newProp.v = node.topic ? node.topic : "";
-        }
-      }
-      if (newProp.vt === "string") {
-        // Fix bug in pre 2.1 where an old Inject node might have
-        // a migrated rule with type 'string' not 'str'
-        newProp.vt = "str";
-      }
-      eList.editableList("addItem", newProp);
-    }
-  };
-
-  function resizeDialog(size) {
-    size = size || { height: $(".red-ui-tray-content form").height() };
-    var rows = $(
-      "#dialog-form>div:not(.node-input-property-container-row):visible"
-    );
-    var height = size.height;
-    for (var i = 0; i < rows.length; i++) {
-      height -= $(rows[i]).outerHeight(true);
-    }
-    var editorRow = $("#dialog-form>div.node-input-property-container-row");
-    height -=
-      parseInt(editorRow.css("marginTop")) +
-      parseInt(editorRow.css("marginBottom"));
-    height += 16;
-    $("#node-input-property-container").editableList("height", height);
-  }
-  function getProps(el, legacy) {
-    var result = {
-      props: [],
-    };
-    el.each(function (i) {
-      var prop = $(this);
-      var p = {
-        p: prop.find(".node-input-prop-property-name").typedInput("value"),
-      };
-      if (p.p) {
-        p.v = prop.find(".node-input-prop-property-value").typedInput("value");
-        p.vt = prop.find(".node-input-prop-property-value").typedInput("type");
-        if (legacy) {
-          if (p.p === "payload") {
-            // save payload to old "legacy" property
-            result.payloadType = p.vt;
-            result.payload = p.v;
-            delete p.v;
-            delete p.vt;
-          } else if (p.p === "topic" && p.vt === "str") {
-            result.topic = p.v;
-            delete p.v;
-          }
-        }
-        result.props.push(p);
-      }
-    });
-    return result;
-  }
-
   RED.nodes.registerType("Contract Method", {
     category: "Near Protocol",
     defaults: {
-      network: { value: "", required: true },
-      contract: { value: "", required: true },
-      accountId: { value: "", required: true },
-      userPrivateKey: { value: "", required: true },
+      contract: {
+        value: "",
+        required: true,
+        validate: function (nodeContractId) {
+          var node = this;
+          const findedContract = RED.nodes
+            .filterNodes({ z: node.z })
+            .find((someContract) => someContract.id === nodeContractId);
+          return !!findedContract;
+        },
+      },
+      method: { value: "", required: true },
     },
     inputs: 1,
     outputs: 1,
     icon: "near.png",
-    oneditprepare,
-    oneditsave: function () {
-      var items = $("#node-input-property-container").editableList("items");
-      delete this.payloadType;
-      delete this.payload;
-      this.topic = "";
-      var result = getProps(items, true);
-      this.props = result.props;
-      if (result.hasOwnProperty("payloadType")) {
-        this.payloadType = result.payloadType;
-      }
-      if (result.hasOwnProperty("payload")) {
-        this.payload = result.payload;
-      }
-      if (result.hasOwnProperty("topic")) {
-        this.topic = result.topic;
-      }
+    oneditprepare: function () {
+      var node = this;
+      var scope = node.scope || [];
+
+      var candidateNodes = RED.nodes
+        .filterNodes({ z: node.z })
+        .filter((node) => node.type === "Near Contract");
+
+      $("#node-input-contract")
+        .css("width", "calc(100% - 150px)")
+        .typedInput({
+          types: [
+            {
+              value: "contract",
+              options: candidateNodes.map((contract) => ({
+                value: contract.id,
+                label: [contract.contract, "-", contract.accountId].join(" "),
+              })),
+            },
+          ],
+        });
+
+      $("#node-input-contract").on("change", function (e) {
+        var contractNodeId = $(this).val();
+        const findedContract = candidateNodes.find(
+          (someContract) => someContract.id === contractNodeId
+        );
+
+        console.log({ findedContract });
+        /*  var propertyName = $("<input/>", {
+          class: "node-input-method",
+          type: "text",
+        }). */
+        $("#node-input-method")
+          .css("width", "calc(100% - 150px)")
+          .typedInput({
+            types: [
+              {
+                value: "method",
+                //TODO: refactor props to methods
+                options:
+                  findedContract?.props?.map((method) => ({
+                    value: method,
+                    label: method.v, // TODO: chande to method.name
+                  })) || [],
+              },
+            ],
+          });
+        $("#node-input-method").on("change", function (e) {
+          var method = $(this).val();
+          console.log("#node-input-method", method);
+        });
+        //console.log({ propertyName });
+      });
     },
-    oneditresize: resizeDialog,
     label: function () {
-      const isPrettyName = this.contract?.includes(".near");
-      return isPrettyName ? this.contract : "Contract Method";
+      return this?.method?.v || "Contract Method";
     },
   });
 </script>
 
-<script type="text/html" data-template-name="NearContract">
+<script type="text/html" data-template-name="Contract Method">
   <div class="form-row">
-    <i class="fa fa-plug"></i>
-    <label for="node-input-network"> Network</label>
-    <input type="hidden" id="node-input-network" placeholder="Network" />
-    <input type="hidden" id="node-input-network" />
-  </div>
-
-  <h3>Near Account Credentials</h3>
-
-  <div class="form-row">
-    <i class="fa fa-user"></i>
-    <label for="node-input-accountId"> Account</label>
-    <input type="text" id="node-input-accountId" placeholder="Account" />
-  </div>
-
-  <div class="form-row">
-    <i class="fa fa-user-secret"></i>
-    <label for="node-input-userPrivateKey"> Private Key</label>
-    <input
-      type="password"
-      id="node-input-userPrivateKey"
-      placeholder="User Private Key"
-    />
-  </div>
-
-  <h3>Near Contract Details</h3>
-
-  <div class="form-row">
-    <i class="fa fa-file-text-o"></i>
+    <i class="fa fa-file"></i>
     <label for="node-input-contract"> Contract</label>
-    <input type="text" id="node-input-contract" placeholder="Contract" />
+    <input type="hidden" id="node-input-contract" placeholder="Contract" />
   </div>
 
-  <div>
-    <label for="node-input-methods-editor">
-      <span> <i class="fa fa-wrench"></i> Contract Methods </span>
-    </label>
-  </div>
-
-  <div
-    class="form-row node-input-property-container-row"
-    style="height: 350px;"
-  >
-    <ol id="node-input-property-container"></ol>
+  <div class="form-row">
+    <i class="fa fa-wrench"></i>
+    <label for="node-input-method"> Method</label>
+    <input type="hidden" id="node-input-method" placeholder="Method" />
   </div>
 </script>

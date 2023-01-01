@@ -1,4 +1,5 @@
 const { KeyPair, connect, InMemorySigner } = require("near-api-js");
+const { CONTEXT_NAME } = require("./config.js");
 
 const near_config = {
   testnet: {
@@ -24,22 +25,18 @@ module.exports = function (RED) {
       nodeConfig = config;
       node = this;
       nearConnectionCfg = near_config[config.network];
-      console.log(JSON.stringify(config));
-      /* const context = { node: this, config };
 
-      var flowContext = this.context().flow;
+      console.log({ config });
+      const flowContext = this.context().flow;
+      let NearContexts = flowContext.get(CONTEXT_NAME);
 
-      let NearContexts = flowContext.get("NearContractsContext");
-      if (NearContexts) NearContexts.push(context);
-      else NearContexts = [context]
-      flowContext.set("NearContractsContext", NearContexts);
-
-      var globalContext = this.context().global;
-      console.log({ flowContext, globalContext }); */
+      if (!NearContexts) NearContexts = new Map();
+      NearContexts.set(config.id, config);
+      flowContext.set(CONTEXT_NAME, NearContexts);
 
       initNearKeys().catch((error) => setError(error));
 
-      node.on("input", onInputAction);
+      //node.on("input", onInputAction);
     } catch (error) {
       setError(error);
     }
@@ -53,7 +50,7 @@ module.exports = function (RED) {
   });
 };
 
-const onInputAction = async (msg, send, done) => {
+/* const onInputAction = async (msg, send, done) => {
   try {
     initNearKeys();
     let near = await connect({ nearConnectionCfg });
@@ -64,7 +61,7 @@ const onInputAction = async (msg, send, done) => {
   } catch (error) {
     setError(error);
   }
-};
+}; */
 const initNearKeys = async () => {
   keyPair = KeyPair.fromString(nodeConfig.userPrivateKey);
   signer = await InMemorySigner.fromKeyPair(

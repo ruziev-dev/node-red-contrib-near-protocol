@@ -17,17 +17,6 @@
     });
 
     var node = this;
-    var payloadType = node.payloadType;
-
-    if (node.payloadType == null) {
-      if (node.payload == "") {
-        payloadType = "date";
-      } else {
-        payloadType = "str";
-      }
-    } else if (node.payloadType === "string" || node.payloadType === "none") {
-      payloadType = "str";
-    }
 
     var eList = $("#node-input-property-container")
       .css("min-height", "120px")
@@ -39,7 +28,7 @@
       addItem: function (container, i, opt) {
         var prop = opt;
         if (!prop.hasOwnProperty("p")) {
-          prop = { p: "", v: "" /* , vt: "str" */ };
+          prop = { p: "", v: "" };
         }
         container.css({
           overflow: "hidden",
@@ -56,7 +45,7 @@
           .typedInput({
             types: [
               {
-                value: "view",
+                value: "prop-property-name",
                 options: [
                   { value: "view", label: "view" },
                   { value: "call", label: "call" },
@@ -86,42 +75,7 @@
       sortable: true,
     });
 
-    if (RED.nodes.subflow(node.z)) {
-      $("#node-inject-test-inject-button").attr("disabled", true);
-    }
-
-    if (!node.props) {
-      var payload = {
-        p: "payload",
-        v: node.payload ? node.payload : "",
-        //vt: payloadType ? payloadType : "date",
-      };
-      var topic = {
-        p: "topic",
-        v: node.topic ? node.topic : "",
-        //vt: "str",
-      };
-      node.props = [payload, topic];
-    }
-
-    for (var i = 0; i < node.props.length; i++) {
-      var prop = node.props[i];
-      var newProp = { p: prop.p, v: prop.v /* , vt: prop.vt */ };
-      /* if (newProp.v === undefined) {
-        if (prop.p === "payload") {
-          newProp.v = node.payload ? node.payload : "";
-          //newProp.vt = payloadType ? payloadType : "date";
-        } else if (prop.p === "topic"  && prop.vt === "str" ) {
-          newProp.v = node.topic ? node.topic : "";
-        }
-      }
-      if (newProp.vt === "string") {
-        // Fix bug in pre 2.1 where an old Inject node might have
-        // a migrated rule with type 'string' not 'str'
-        newProp.vt = "str";
-      } */
-      eList.editableList("addItem", newProp);
-    }
+    node.props.forEach((propertie) => eList.editableList("addItem", propertie));
   };
 
   function resizeDialog(size) {
@@ -151,18 +105,6 @@
       };
       if (p.p) {
         p.v = prop.find(".node-input-prop-property-value").typedInput("value");
-        if (legacy) {
-          if (p.p === "payload") {
-            // save payload to old "legacy" property
-            //result.payloadType = p.vt;
-            result.payload = p.v;
-            delete p.v;
-            //delete p.vt;
-          } /* else if (p.p === "topic" && p.vt === "str") {
-            result.topic = p.v;
-            delete p.v;
-          } */
-        }
         result.props.push(p);
       }
     });
@@ -179,7 +121,9 @@
 
       props: {
         value: [{ p: "view", v: "get_contract_state" }],
-        validate: (rows) => rows?.every((method) => !!(method.p && method.v)),
+        validate: function (rows) {
+          return rows?.every((method) => !!(method.p && method.v));
+        },
       },
     },
     inputs: 0,
@@ -188,20 +132,10 @@
     oneditprepare,
     oneditsave: function () {
       var items = $("#node-input-property-container").editableList("items");
-      delete this.payloadType;
       delete this.payload;
       this.topic = "";
       var result = getProps(items, true);
       this.props = result.props;
-      if (result.hasOwnProperty("payloadType")) {
-        this.payloadType = result.payloadType;
-      }
-      if (result.hasOwnProperty("payload")) {
-        this.payload = result.payload;
-      }
-      if (result.hasOwnProperty("topic")) {
-        this.topic = result.topic;
-      }
     },
     oneditresize: resizeDialog,
     label: function () {
@@ -216,7 +150,6 @@
     <i class="fa fa-plug"></i>
     <label for="node-input-network"> Network</label>
     <input type="hidden" id="node-input-network" placeholder="Network" />
-    <input type="hidden" id="node-input-network" />
   </div>
 
   <h3>Near Account Credentials</h3>

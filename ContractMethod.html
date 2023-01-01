@@ -151,7 +151,6 @@
     height += 16;
     $("#node-input-property-container").editableList("height", height);
   }
-  /** Retrieve editableList items (refactored for re-use in the form inject button)*/
   function getProps(el, legacy) {
     var result = {
       props: [],
@@ -182,58 +181,13 @@
     return result;
   }
 
-  RED.nodes.registerType("NearContract", {
+  RED.nodes.registerType("Contract Method", {
     category: "Near Protocol",
     defaults: {
       network: { value: "", required: true },
       contract: { value: "", required: true },
       accountId: { value: "", required: true },
       userPrivateKey: { value: "", required: true },
-
-      props: {
-        value: [{ p: "payload" }, { p: "topic", vt: "str" }],
-        validate: function (v, opt) {
-          if (!v || v.length === 0) {
-            return true;
-          }
-          for (var i = 0; i < v.length; i++) {
-            if (/msg|flow|global/.test(v[i].vt)) {
-              if (!RED.utils.validatePropertyExpression(v[i].v)) {
-                return RED._("node-red:inject.errors.invalid-prop", {
-                  prop: "msg." + v[i].p,
-                  error: v[i].v,
-                });
-              }
-            } else if (v[i].vt === "jsonata") {
-              try {
-                jsonata(v[i].v);
-              } catch (e) {
-                return RED._("node-red:inject.errors.invalid-jsonata", {
-                  prop: "msg." + v[i].p,
-                  error: e.message,
-                });
-              }
-            } else if (v[i].vt === "json") {
-              try {
-                JSON.parse(v[i].v);
-              } catch (e) {
-                return RED._("node-red:inject.errors.invalid-json", {
-                  prop: "msg." + v[i].p,
-                  error: e.message,
-                });
-              }
-            } else if (v[i].vt === "num") {
-              if (!/^[+-]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(v[i].v)) {
-                return RED._("node-red:inject.errors.invalid-prop", {
-                  prop: "msg." + v[i].p,
-                  error: v[i].v,
-                });
-              }
-            }
-          }
-          return true;
-        },
-      },
     },
     inputs: 1,
     outputs: 1,
@@ -259,7 +213,7 @@
     oneditresize: resizeDialog,
     label: function () {
       const isPrettyName = this.contract?.includes(".near");
-      return isPrettyName ? this.contract : "NearContract";
+      return isPrettyName ? this.contract : "Contract Method";
     },
   });
 </script>

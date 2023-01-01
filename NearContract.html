@@ -169,7 +169,7 @@
     return result;
   }
 
-  RED.nodes.registerType("NearContract", {
+  RED.nodes.registerType("Near Contract", {
     category: "Near Protocol",
     defaults: {
       network: { value: "", required: true },
@@ -182,8 +182,8 @@
         validate: (rows) => rows?.every((method) => !!(method.p && method.v)),
       },
     },
-    inputs: 1,
-    outputs: 1,
+    inputs: 0,
+    outputs: 0,
     icon: "near.png",
     oneditprepare,
     oneditsave: function () {
@@ -206,12 +206,12 @@
     oneditresize: resizeDialog,
     label: function () {
       const isPrettyName = this.contract?.includes(".near");
-      return isPrettyName ? this.contract : "NearContract";
+      return isPrettyName ? this.contract : "Near Contract";
     },
   });
 </script>
 
-<script type="text/html" data-template-name="NearContract">
+<script type="text/html" data-template-name="Near Contract">
   <div class="form-row">
     <i class="fa fa-plug"></i>
     <label for="node-input-network"> Network</label>

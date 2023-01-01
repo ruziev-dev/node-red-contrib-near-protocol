@@ -25,13 +25,17 @@ module.exports = function (RED) {
       node = this;
       nearConnectionCfg = near_config[config.network];
       console.log(JSON.stringify(config));
-
-      //this.context()
+      /* const context = { node: this, config };
 
       var flowContext = this.context().flow;
 
+      let NearContexts = flowContext.get("NearContractsContext");
+      if (NearContexts) NearContexts.push(context);
+      else NearContexts = [context]
+      flowContext.set("NearContractsContext", NearContexts);
+
       var globalContext = this.context().global;
-      console.log({ flowContext, globalContext });
+      console.log({ flowContext, globalContext }); */
 
       initNearKeys().catch((error) => setError(error));
 
@@ -40,7 +44,7 @@ module.exports = function (RED) {
       setError(error);
     }
   }
-  RED.nodes.registerType("NearContract", NearContract, {
+  RED.nodes.registerType("Near Contract", NearContract, {
     settings: {
       userPrivateKey: {
         exportable: false,

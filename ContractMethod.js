@@ -18,7 +18,7 @@ let nearConnectionCfg;
 let signer;
 
 module.exports = function (RED) {
-  function NearContract(config) {
+  function ContractMethod(config) {
     try {
       RED.nodes.createNode(this, config);
       nodeConfig = config;
@@ -33,7 +33,7 @@ module.exports = function (RED) {
       setError(error);
     }
   }
-  RED.nodes.registerType("NearContract", NearContract, {
+  RED.nodes.registerType("Contract Method", ContractMethod, {
     settings: {
       userPrivateKey: {
         exportable: false,

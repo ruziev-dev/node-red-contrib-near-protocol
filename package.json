@@ -20,7 +20,8 @@
   },
   "node-red": {
     "nodes": {
-      "NearContract": "NearContract.js"
+      "Near Contract": "NearContract.js",
+      "Contract Method": "ContractMethod.js"
     }
   },
   "devDependencies": {

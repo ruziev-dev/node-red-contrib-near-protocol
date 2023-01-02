@@ -57,9 +57,8 @@
             types: [
               {
                 value: "method",
-                //TODO: refactor props to methods
                 options:
-                  findedContract?.props?.map((method) => ({
+                  findedContract?.methods?.map((method) => ({
                     value: method,
                     label: method.v, // TODO: chande to method.name
                   })) || [],

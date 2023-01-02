@@ -28,7 +28,8 @@
       addItem: function (container, i, opt) {
         var prop = opt;
         if (!prop.hasOwnProperty("p")) {
-          prop = { p: "", v: "" };
+          //default value
+          prop = { p: "view", v: "" };
         }
         container.css({
           overflow: "hidden",
@@ -75,7 +76,7 @@
       sortable: true,
     });
 
-    node.props.forEach((propertie) => eList.editableList("addItem", propertie));
+    node.methods.forEach((propertie) => eList.editableList("addItem", propertie));
   };
 
   function resizeDialog(size) {
@@ -96,7 +97,7 @@
   }
   function getProps(el, legacy) {
     var result = {
-      props: [],
+      methods: [],
     };
     el.each(function (i) {
       var prop = $(this);
@@ -105,7 +106,7 @@
       };
       if (p.p) {
         p.v = prop.find(".node-input-prop-property-value").typedInput("value");
-        result.props.push(p);
+        result.methods.push(p);
       }
     });
     return result;
@@ -119,7 +120,7 @@
       accountId: { value: "", required: true },
       userPrivateKey: { value: "", required: true },
 
-      props: {
+      methods: {
         value: [{ p: "view", v: "get_contract_state" }],
         validate: function (rows) {
           return rows?.every((method) => !!(method.p && method.v));
@@ -135,7 +136,7 @@
       delete this.payload;
       this.topic = "";
       var result = getProps(items, true);
-      this.props = result.props;
+      this.methods = result.methods;
     },
     oneditresize: resizeDialog,
     label: function () {

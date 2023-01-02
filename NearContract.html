@@ -18,18 +18,17 @@
 
     var node = this;
 
-    var eList = $("#node-input-property-container")
+    var eList = $("#node-input-methods-container")
       .css("min-height", "120px")
       .css("max-height", "400px")
       .css("min-width", "450px");
 
     eList.editableList({
-      buttons: [],
       addItem: function (container, i, opt) {
-        var prop = opt;
-        if (!prop.hasOwnProperty("p")) {
+        var method = opt;
+        if (!method.hasOwnProperty("p")) {
           //default value
-          prop = { p: "view", v: "" };
+          method = { p: "view", v: "" };
         }
         container.css({
           overflow: "hidden",
@@ -37,8 +36,8 @@
         });
         var row = $("<div/>").appendTo(container);
 
-        var propertyName = $("<input/>", {
-          class: "node-input-prop-property-name",
+        var methodType = $("<input/>", {
+          class: "node-input-method-type",
           type: "text",
         })
           .css("width", "30%")
@@ -46,7 +45,7 @@
           .typedInput({
             types: [
               {
-                value: "prop-property-name",
+                value: "method-type",
                 options: [
                   { value: "view", label: "view" },
                   { value: "call", label: "call" },
@@ -59,8 +58,8 @@
           .text(" ")
           .appendTo(row);
 
-        var propertyValue = $("<input/>", {
-          class: "node-input-prop-property-value",
+        var methodName = $("<input/>", {
+          class: "node-input-method-name",
           type: "text",
         })
           .css("width", "calc(70% - 30px)")
@@ -69,44 +68,48 @@
             types: ["str"],
           });
 
-        propertyName.typedInput("value", prop.p);
-        propertyValue.typedInput("value", prop.v);
+        methodType.typedInput("value", method.p);
+        methodName.typedInput("value", method.v);
       },
       removable: true,
       sortable: true,
     });
 
-    node.methods.forEach((propertie) => eList.editableList("addItem", propertie));
+    node.methods.forEach((propertie) =>
+      eList.editableList("addItem", propertie)
+    );
   };
 
   function resizeDialog(size) {
     size = size || { height: $(".red-ui-tray-content form").height() };
     var rows = $(
-      "#dialog-form>div:not(.node-input-property-container-row):visible"
+      "#dialog-form>div:not(.node-input-methods-container-row):visible"
     );
     var height = size.height;
     for (var i = 0; i < rows.length; i++) {
       height -= $(rows[i]).outerHeight(true);
     }
-    var editorRow = $("#dialog-form>div.node-input-property-container-row");
+    var editorRow = $("#dialog-form>div.node-input-methods-container-row");
     height -=
       parseInt(editorRow.css("marginTop")) +
       parseInt(editorRow.css("marginBottom"));
     height += 16;
-    $("#node-input-property-container").editableList("height", height);
+    $("#node-input-methods-container").editableList("height", height);
   }
   function getProps(el, legacy) {
     var result = {
       methods: [],
     };
     el.each(function (i) {
-      var prop = $(this);
-      var p = {
-        p: prop.find(".node-input-prop-property-name").typedInput("value"),
+      var methodObject = $(this);
+      var methodValue = {
+        p: methodObject.find(".node-input-method-type").typedInput("value"),
       };
-      if (p.p) {
-        p.v = prop.find(".node-input-prop-property-value").typedInput("value");
-        result.methods.push(p);
+      if (methodValue.p) {
+        methodValue.v = methodObject
+          .find(".node-input-method-name")
+          .typedInput("value");
+        result.methods.push(methodValue);
       }
     });
     return result;
@@ -132,7 +135,7 @@
     icon: "near.png",
     oneditprepare,
     oneditsave: function () {
-      var items = $("#node-input-property-container").editableList("items");
+      var items = $("#node-input-methods-container").editableList("items");
       delete this.payload;
       this.topic = "";
       var result = getProps(items, true);
@@ -140,7 +143,9 @@
     },
     oneditresize: resizeDialog,
     label: function () {
-      const isPrettyName = this.contract?.includes(".near");
+      const isPrettyName =
+        this.contract?.includes(".near") || this.contract?.includes(".testnet");
+
       return isPrettyName ? this.contract : "Near Contract";
     },
   });
@@ -185,10 +190,7 @@
     </label>
   </div>
 
-  <div
-    class="form-row node-input-property-container-row"
-    style="height: 350px;"
-  >
-    <ol id="node-input-property-container"></ol>
+  <div class="form-row node-input-methods-container-row" style="height: 350px;">
+    <ol id="node-input-methods-container"></ol>
   </div>
 </script>

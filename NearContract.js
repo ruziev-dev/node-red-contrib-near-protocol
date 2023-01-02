@@ -40,11 +40,11 @@ module.exports = function (RED) {
     }
   }
   RED.nodes.registerType("Near Contract", NearContract, {
-    settings: {
+    /*  settings: {
       userPrivateKey: {
         exportable: false,
       },
-    },
+    }, */
   });
 };
 

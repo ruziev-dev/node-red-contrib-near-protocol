@@ -8,8 +8,9 @@
         validate: function (nodeContractId) {
           var node = this;
           const findedContract = RED.nodes
-            .filterNodes({ z: node.z })
-            .find((someContract) => someContract.id === nodeContractId);
+            .filterNodes({ type: "Near Contract" })
+            .find((contract) => contract.id === nodeContractId);
+
           return !!findedContract;
         },
       },
@@ -21,59 +22,59 @@
     oneditprepare: function () {
       var node = this;
       var scope = node.scope || [];
+      console.log({ node });
+      var candidateNodes = RED.nodes.filterNodes({ type: "Near Contract" });
+      var contractSelector = $("#node-input-contract");
+      var methodSelector = $("#node-input-method");
 
-      var candidateNodes = RED.nodes
-        .filterNodes({ z: node.z })
-        .filter((node) => node.type === "Near Contract");
+      contractSelector.css("width", "calc(100% - 150px)").typedInput({
+        types: [
+          {
+            value: "contract",
+            options: candidateNodes.map((contract) => ({
+              value: contract.id,
+              label: [contract.contract, "-", contract?.accountId].join(" "),
+            })),
+          },
+        ],
+      });
 
-      $("#node-input-contract")
-        .css("width", "calc(100% - 150px)")
-        .typedInput({
-          types: [
-            {
-              value: "contract",
-              options: candidateNodes.map((contract) => ({
-                value: contract.id,
-                label: [contract.contract, "-", contract.accountId].join(" "),
-              })),
-            },
-          ],
-        });
-
-      $("#node-input-contract").on("change", function (e) {
+      contractSelector.on("change", function (e) {
         var contractNodeId = $(this).val();
         const findedContract = candidateNodes.find(
           (someContract) => someContract.id === contractNodeId
         );
 
-        console.log({ findedContract });
-        /*  var propertyName = $("<input/>", {
-          class: "node-input-method",
-          type: "text",
-        }). */
-        $("#node-input-method")
-          .css("width", "calc(100% - 150px)")
-          .typedInput({
-            types: [
-              {
-                value: "method",
-                options:
-                  findedContract?.methods?.map((method) => ({
-                    value: method,
-                    label: method.v, // TODO: chande to method.name
-                  })) || [],
-              },
-            ],
-          });
-        $("#node-input-method").on("change", function (e) {
-          var method = $(this).val();
-          console.log("#node-input-method", method);
+        methodSelector.empty();
+        methodSelector.val(node.method);
+
+        findedContract.methods?.forEach((method) => {
+          const newOption = $("<option></option>");
+          newOption
+            .attr("value", method.name)
+            .text(method.type + " " + method.name);
+          if (method.name === node.method) newOption.attr("selected", true);
+          methodSelector.append(newOption);
         });
-        //console.log({ propertyName });
+      });
+
+      methodSelector.on("change", function (e) {
+        node.method = e.target.value;
       });
     },
     label: function () {
-      return this?.method?.v || "Contract Method";
+      var node = this;
+      const selectedContract = RED.nodes
+        .filterNodes({ type: "Near Contract" })
+        .find((contract) => contract.id === this.contract);
+
+      const method = selectedContract?.methods?.find(
+        (method) => method.name === this.method
+      );
+
+      if (method?.type && selectedContract?.contract && method?.name)
+        return `${method.type} ${selectedContract.contract}.${method.name}( )`;
+      else return "Contract Method";
     },
   });
 </script>
@@ -88,6 +89,6 @@
   <div class="form-row">
     <i class="fa fa-wrench"></i>
     <label for="node-input-method"> Method</label>
-    <input type="hidden" id="node-input-method" placeholder="Method" />
+    <select id="node-input-method"></select>
   </div>
 </script>

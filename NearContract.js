@@ -22,11 +22,11 @@ module.exports = function (RED) {
   function NearContract(config) {
     try {
       RED.nodes.createNode(this, config);
+
       nodeConfig = config;
       node = this;
       nearConnectionCfg = near_config[config.network];
 
-      //console.log({ config });
       const flowContext = this.context().flow;
       let NearContexts = flowContext.get(CONTEXT_NAME);
 
@@ -40,22 +40,19 @@ module.exports = function (RED) {
     }
   }
   RED.nodes.registerType("Near Contract", NearContract, {
-    /*  settings: {
-      userPrivateKey: {
-        exportable: false,
-      },
-    }, */
+    credentials: {
+      userPrivateKey: { type: "password" },
+    },
   });
 };
 
 const initNearKeys = async () => {
-  keyPair = KeyPair.fromString(nodeConfig.userPrivateKey);
+  keyPair = KeyPair.fromString(node.credentials?.userPrivateKey);
   signer = await InMemorySigner.fromKeyPair(
     nearConnectionCfg.networkId,
-    nodeConfig.accountId,
+    node.accountId,
     keyPair
   );
-
   node.status({
     fill: "green",
     shape: "dot",

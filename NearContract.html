@@ -26,9 +26,9 @@
     eList.editableList({
       addItem: function (container, i, opt) {
         var method = opt;
-        if (!method.hasOwnProperty("p")) {
+        if (!method.hasOwnProperty("type")) {
           //default value
-          method = { p: "view", v: "" };
+          method = { type: "view", name: "" };
         }
         container.css({
           overflow: "hidden",
@@ -68,8 +68,8 @@
             types: ["str"],
           });
 
-        methodType.typedInput("value", method.p);
-        methodName.typedInput("value", method.v);
+        methodType.typedInput("value", method.type);
+        methodName.typedInput("value", method.name);
       },
       removable: true,
       sortable: true,
@@ -103,10 +103,10 @@
     el.each(function (i) {
       var methodObject = $(this);
       var methodValue = {
-        p: methodObject.find(".node-input-method-type").typedInput("value"),
+        type: methodObject.find(".node-input-method-type").typedInput("value"),
       };
-      if (methodValue.p) {
-        methodValue.v = methodObject
+      if (methodValue.type) {
+        methodValue.name = methodObject
           .find(".node-input-method-name")
           .typedInput("value");
         result.methods.push(methodValue);
@@ -119,16 +119,17 @@
     category: "Near Protocol",
     defaults: {
       network: { value: "", required: true },
-      contract: { value: "", required: true },
       accountId: { value: "", required: true },
-      userPrivateKey: { value: "", required: true },
-
+      contract: { value: "", required: true },
       methods: {
-        value: [{ p: "view", v: "get_contract_state" }],
+        value: [{ type: "view", name: "get_contract_state" }],
         validate: function (rows) {
-          return rows?.every((method) => !!(method.p && method.v));
+          return rows?.every((method) => !!(method.type && method.name));
         },
       },
+    },
+    credentials: {
+      userPrivateKey: { type: "password" },
     },
     inputs: 0,
     outputs: 0,

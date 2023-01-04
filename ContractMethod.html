@@ -22,7 +22,6 @@
     oneditprepare: function () {
       var node = this;
       var scope = node.scope || [];
-      console.log({ node });
       var candidateNodes = RED.nodes.filterNodes({ type: "Near Contract" });
       var contractSelector = $("#node-input-contract");
       var methodSelector = $("#node-input-method");

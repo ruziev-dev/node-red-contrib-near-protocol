@@ -45,20 +45,23 @@
         );
 
         methodSelector.empty();
-        methodSelector.val(node.method);
 
         findedContract.methods?.forEach((method) => {
           const newOption = $("<option></option>");
           newOption
             .attr("value", method.name)
             .text(method.type + " " + method.name);
-          if (method.name === node.method) newOption.attr("selected", true);
           methodSelector.append(newOption);
         });
+        methodSelector.attr("value", node.method);
+        methodSelector.val(node.method);
       });
 
       methodSelector.on("change", function (e) {
-        node.method = e.target.value;
+        const newMethod = e.target.value;
+        this.method = newMethod;
+        methodSelector.val(newMethod);
+        methodSelector.attr("value", newMethod);
       });
     },
     label: function () {

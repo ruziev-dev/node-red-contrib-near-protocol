@@ -12,28 +12,29 @@ const near_config = {
   },
 };
 
+
 module.exports = function (RED) {
   function NearContract(config) {
-    RED.nodes.createNode(this, config);
+    (async () => {
+      RED.nodes.createNode(this, config);
 
-    const node = this;
-    const nearConnectionCfg = near_config[config.network];
+      const node = this;
+      const nearConnectionCfg = near_config[config.network];
 
-    function setError(error) {
-      node.error(error);
-      node.trace(error);
-      node.status({ fill: "red", shape: "dot", text: error.message });
-    }
-    try {
-      if (!node.credentials.userPrivateKey)
-        throw Error("Private key is not filled in");
+      function setError(error) {
+        node.error(error);
+        node.trace(error);
+        node.status({ fill: "red", shape: "dot", text: error.message });
+      }
+      try {
+        if (!node.credentials.userPrivateKey)
+          throw Error("Private key is not filled in");
 
-      const flowContext = this.context().flow;
-      let nearContracts = flowContext.get(NEAR_CONTRACT_CONTEXT);
+        const flowContext = this.context().flow;
+        let nearContracts = flowContext.get(NEAR_CONTRACT_CONTEXT);
 
-      if (!nearContracts) nearContracts = new Map();
+        if (!nearContracts) nearContracts = new Map();
 
-      async function initNearContext() {
         const keyPair = utils.KeyPair.fromString(
           node.credentials.userPrivateKey
         );
@@ -66,24 +67,26 @@ module.exports = function (RED) {
           config.contract,
           contractMethods
         );
-        return NearContract;
+
+        nearContracts.set(config.id, NearContract);
+        flowContext.set(NEAR_CONTRACT_CONTEXT, nearContracts);
+
+       /*  fetch("http:127.0.0.1:1880/flows", {
+          method: "POST",
+          headers: {
+            "Node-RED-Deployment-Type": "reload",
+          },
+        }).catch((error) => node.error(error)); */
+
+        node.status({
+          fill: "green",
+          shape: "dot",
+          text: config.accountId,
+        });
+      } catch (error) {
+        setError(error);
       }
-
-      initNearContext()
-        .then((contractContext) => {
-          nearContracts.set(config.id, contractContext);
-          flowContext.set(NEAR_CONTRACT_CONTEXT, nearContracts);
-
-          node.status({
-            fill: "green",
-            shape: "dot",
-            text: config.accountId,
-          });
-        })
-        .catch((error) => setError(error));
-    } catch (error) {
-      setError(error);
-    }
+    })();
   }
   RED.nodes.registerType("Near Contract", NearContract, {
     credentials: {

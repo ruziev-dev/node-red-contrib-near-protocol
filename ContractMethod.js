@@ -1,4 +1,5 @@
 const { NEAR_CONTRACT_CONTEXT } = require("./config.js");
+const fetch = require("node-fetch");
 
 module.exports = function (RED) {
   function ContractMethod(config) {
@@ -14,23 +15,31 @@ module.exports = function (RED) {
           shape: "dot",
           text: error.message?.split(".")?.[0],
         });
+        setTimeout(() => {
+          node.status({});
+        }, 5000);
       }
+
+      const flowContext = node.context().flow;
+      const nearContracts = flowContext?.get(NEAR_CONTRACT_CONTEXT);
+      const contract = nearContracts?.get(config.contract);
+
+      if (!contract)
+        // If contract doesn't exist in context flows have to be reloaded
+        fetch("http:127.0.0.1:1880/flows", {
+          method: "POST",
+          headers: {
+            "Node-RED-Deployment-Type": "reload",
+          },
+        }).catch((error) => setError(error));
 
       async function handleInput(msg, send, done) {
         try {
-          const flowContext = node.context().flow;
-          const nearContracts = flowContext.get(NEAR_CONTRACT_CONTEXT);
-          const contract = nearContracts.get(config.contract);
           node.status({
-            fill: "green",
+            fill: "blue",
             shape: "dot",
             text: "Processing...",
           });
-
-          if (!contract)
-            throw new Error(
-              `Contract has been setted with some errors and it was not found`
-            );
 
           const result = await contract[config.method](msg.payload);
 

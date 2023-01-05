@@ -1,6 +1,6 @@
 {
   "name": "node-red-near-protocol",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "description": "Allows to run Near Protocol blockchain smart-contract methods on Node RED",
   "scripts": {
     "test": "mocha"
@@ -13,16 +13,24 @@
     "smart-contract"
   ],
   "author": "Timur Ruziev <ruziev.dev@gmail.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "dependencies": {
     "near-api-js": "^1.1.0",
     "node-fetch": "^2.6.7"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruziev-dev/node-red-near-protocol.git"
+  },
   "node-red": {
+    "version": ">=2.0.0",
     "nodes": {
       "Near Contract": "NearContract.js",
       "Contract Method": "ContractMethod.js"
     }
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "devDependencies": {
     "mocha": "^9.1.3"

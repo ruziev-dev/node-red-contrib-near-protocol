@@ -78,5 +78,5 @@ Go to <code>Settings</code> - <code>Backup Account</code> Choose export method <
 
     ![](./assets/_execution_error.png)
 
-    Execution succes result will be transmitted to next node. If contract call does not return any result next node will get `{ payload: "completed" }`
+    Execution succes result will be transmitted to next node. If contract call does not return any result next node will get `{ payload: {} }`
     ![](./assets/_completed.png)

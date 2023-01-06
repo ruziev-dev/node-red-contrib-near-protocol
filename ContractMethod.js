@@ -52,7 +52,7 @@ module.exports = function (RED) {
 
           const result = await contract[config.method](msg.payload);
 
-          send({ payload: result || "completed" });
+          send({ payload: result || {} });
           node.status({});
           if (done) {
             done();

@@ -4,11 +4,9 @@
 ![NPM version](https://badge.fury.io/js/node-red-near-protocol.svg)
 ![NPM](https://img.shields.io/npm/l/node-red-near-protocol)
 
-This module provides nodes to call smart-contract methods from
+This module provides nodes to call smart contract methods and observe it from your automation Node-RED Project.
 
 ![](./assets/_pallets.png)
-
-## Add NEAR Protocol to your automation Node-RED Project.
 
 ### Install
 

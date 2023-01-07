@@ -1,0 +1,123 @@
+[
+    {
+        "id": "113666582fc7aa22",
+        "type": "tab",
+        "label": "Request testnet NEAR",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "320690de95cb5415",
+        "type": "Near Contract",
+        "z": "113666582fc7aa22",
+        "network": "testnet",
+        "accountId": "ruziev_dev.testnet",
+        "contract": "v1.faucet.nonofficial.testnet",
+        "methods": [
+            {
+                "type": "call",
+                "name": "request_funds"
+            }
+        ],
+        "x": 380,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "f697ea965deab24f",
+        "type": "Contract Method",
+        "z": "113666582fc7aa22",
+        "contract": "320690de95cb5415",
+        "method": "request_funds",
+        "x": 640,
+        "y": 400,
+        "wires": [
+            [
+                "aa7914387ede5937"
+            ]
+        ]
+    },
+    {
+        "id": "4a5d464075067f38",
+        "type": "inject",
+        "z": "113666582fc7aa22",
+        "name": "request 20 NEAR",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"receiver_id\":\"ruziev_dev.testnet\",\"amount\":\"20000000000000000000000000\"}",
+        "payloadType": "json",
+        "x": 300,
+        "y": 340,
+        "wires": [
+            [
+                "f697ea965deab24f"
+            ]
+        ]
+    },
+    {
+        "id": "aa7914387ede5937",
+        "type": "debug",
+        "z": "113666582fc7aa22",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 950,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "0200fa6711fde396",
+        "type": "comment",
+        "z": "113666582fc7aa22",
+        "name": "1. Set your account name and private key to contract node",
+        "info": "",
+        "x": 390,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "3b3dfed1ba55a8fb",
+        "type": "comment",
+        "z": "113666582fc7aa22",
+        "name": "2. Change \"receiver_id\" to your account to get tokens",
+        "info": "",
+        "x": 360,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "f0ed9b2f43642653",
+        "type": "comment",
+        "z": "113666582fc7aa22",
+        "name": "3. Deploy flow",
+        "info": "",
+        "x": 530,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "92407af39635ef27",
+        "type": "comment",
+        "z": "113666582fc7aa22",
+        "name": "4. Run contract",
+        "info": "",
+        "x": 240,
+        "y": 380,
+        "wires": []
+    }
+]

@@ -28,21 +28,18 @@ npm i node-red-near-protocol
 
 3. Set values to fields, fill in contract methods and press `Done`
 
-   ![](./assets/1_3_configure_Near_Contract_finish.png)
+      <details><summary>How to get your private key?</summary>
+      <b>Near Wallet</b>
+      <p>
+      Open Browser DevTools go to tab <code>Application</code>, open <code>Local Storage</code> and find private key.
+      </p>
+      <img src="./assets/1_2_get_private_key_from_near_wallet.png">
+      <b>Another wallet</b>
+      <p>
+      Go to <code>Settings</code> - <code>Backup Account</code> Choose export method <code>Private Key</code>
+      </p></details><br/>
 
-<details><summary>How to get your private key?</summary>
-<li>Near Wallet
-<p>
-Open Browser DevTools go to tab <code>Application</code>, open <code>Local Storage</code> and find private key.
-</p>
-<img src="./assets/1_2_get_private_key_from_near_wallet.png">
-</li>
-<li>
-Another wallet
-<p>
-Go to <code>Settings</code> - <code>Backup Account</code> Choose export method <code>Private Key</code>
-</p>
-</details>
+   ![](./assets/1_3_configure_Near_Contract_finish.png)
 
 4. Press `Deploy` button. After succesful flow deploy you have to see similar contract node or error message.
 

@@ -71,13 +71,6 @@ module.exports = function (RED) {
         nearContracts.set(config.id, NearContract);
         flowContext.set(NEAR_CONTRACT_CONTEXT, nearContracts);
 
-       /*  fetch("http:127.0.0.1:1880/flows", {
-          method: "POST",
-          headers: {
-            "Node-RED-Deployment-Type": "reload",
-          },
-        }).catch((error) => node.error(error)); */
-
         node.status({
           fill: "green",
           shape: "dot",

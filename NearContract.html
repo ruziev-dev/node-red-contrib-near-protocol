@@ -195,3 +195,52 @@
     <ol id="node-input-methods-container"></ol>
   </div>
 </script>
+
+<style>
+  .message-properties li {
+    border: 0 !important;
+  }
+</style>
+
+<script type="text/html" data-help-name="Near Contract">
+  <p>Create context which will be used by <b>Near Method</b> node</p>
+
+  <h3>How to get account private key?</h3>
+  <ol class="node-ports">
+    <li>
+      Near Wallet
+      <dl class="message-properties">
+        <ol>
+          <li>Open your wallet in a Browser tab</li>
+          <li>Open DevTools go to tab <code>Application</code></li>
+          <li>
+            Open <code>Local Storage</code> and find private key which started
+            from <code>ed25519</code>
+          </li>
+        </ol>
+      </dl>
+    </li>
+    <li>
+      Another wallet
+      <dl class="message-properties">
+        <ol>
+          <li>Open your wallet</li>
+          <li>Go to <code>Settings</code> - <code>Backup Account</code></li>
+          <li>Choose export method <code>Private Key</code></li>
+        </ol>
+      </dl>
+    </li>
+  </ol>
+
+  <h3>References</h3>
+  <ul>
+    <li>
+      <a href="https://github.com/ruziev-dev/node-red-near-protocol">GitHub</a>
+      - the nodes github repository
+    </li>
+    <li>
+      <a href="https://www.npmjs.com/package/node-red-near-protocol">npm</a>
+      - the nodes npm package page
+    </li>
+  </ul>
+</script>

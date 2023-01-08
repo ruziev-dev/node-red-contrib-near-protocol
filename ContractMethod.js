@@ -1,7 +1,7 @@
 const { NEAR_CONTRACT_CONTEXT } = require("./config.js");
 const fetch = require("node-fetch");
 
-let tryedToRestartFlowsOnContractError = false;
+const contractContextFoundInMethods = new Map();
 
 module.exports = function (RED) {
   function ContractMethod(config) {
@@ -28,12 +28,12 @@ module.exports = function (RED) {
 
       // If contract doesn't exist in flow context it may be reloaded to fix or contract settings is not correct
       if (!contract)
-        if (tryedToRestartFlowsOnContractError)
+        if (contractContextFoundInMethods.get(config.id))
           throw Error(
             "Contract has been setted with some errors and it was not found"
           );
         else {
-          tryedToRestartFlowsOnContractError = true;
+          contractContextFoundInMethods.set(config.id, true);
           fetch("http:127.0.0.1:1880/flows", {
             method: "POST",
             headers: {
@@ -52,7 +52,8 @@ module.exports = function (RED) {
 
           const result = await contract[config.method](msg.payload);
 
-          send({ payload: result || {} });
+          msg.payload = result || {};
+          send(msg);
           node.status({});
           if (done) {
             done();

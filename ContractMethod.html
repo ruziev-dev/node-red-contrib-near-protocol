@@ -94,3 +94,45 @@
     <select id="node-input-method"></select>
   </div>
 </script>
+
+<script type="text/markdown" data-help-name="Contract Method">
+  Call contract Method
+
+  ### Input
+
+  `payload` is the standard input of the command.
+
+  #### call method example
+
+  ```
+  {
+    "meta": "some info",
+    "args": {
+      "method_argument_1": "my message",
+      "method_argument_2": 10
+    },
+    "amount": 1
+  }
+  ```
+
+  or `args` as empty object `{ "args": {}}`
+
+  #### view method examples
+
+  `{ "account_id": "some.near" }` or empty object `{}`
+
+  ### Output
+
+  `payload` is the standard output of the command.
+  returns some result object or empty object `{}`
+
+  ### References
+
+  - <a href="https://github.com/ruziev-dev/node-red-near-protocol">GitHub</a>
+
+    - the nodes github repository
+
+  - <a href="https://www.npmjs.com/package/node-red-near-protocol">npm</a>
+
+    - the nodes npm package page
+</script>

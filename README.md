@@ -10,7 +10,7 @@ This module provides nodes to call smart contract methods and observe it from yo
 
 ### Install
 
-To install the stable version use the `Menu` - `Manage palette` option and search for `node-red-near-protocol`, or run the following command in your Node-RED user directory - typically ~/.node-red:
+To install the stable version use the `Menu` - `Manage palette` option and search for `node-red-near-protocol`, or run the following command in your Node-RED user directory - typically `~/.node-red`:
 
 ```bash
 npm i node-red-near-protocol
@@ -18,7 +18,7 @@ npm i node-red-near-protocol
 
 ### Create your first flow
 
-1. Add `Near Contract` node to workspase
+1. Add `Near Contract` node to workspace
 
    ![](./assets/1_0_add_Near_Contract_to_flow.png)
 

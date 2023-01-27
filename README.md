@@ -1,8 +1,8 @@
-# node-red-near-protocol
+# node-red-contrib-near-protocol
 
 [![platform](https://img.shields.io/badge/platform-Node--RED-red)](https://nodered.org)
-![NPM version](https://badge.fury.io/js/node-red-near-protocol.svg)
-![NPM](https://img.shields.io/npm/l/node-red-near-protocol)
+![NPM version](https://badge.fury.io/js/node-red-contrib-near-protocol.svg)
+![NPM](https://img.shields.io/npm/l/node-red-contrib-near-protocol)
 
 This module provides nodes to call smart contract methods and observe it from your automation Node-RED Project.
 
@@ -10,10 +10,11 @@ This module provides nodes to call smart contract methods and observe it from yo
 
 ### Install
 
-To install the stable version use the `Menu` - `Manage palette` option and search for `node-red-near-protocol`, or run the following command in your Node-RED user directory - typically `~/.node-red`:
+To install the stable version use the `Menu` - `Manage palette` option and search for `node-red-contrib-near-protocol`, or run the following command in your Node-RED user directory - typically `~/.node-red`:
 
 ```bash
-npm i node-red-near-protocol
+cd ~/.node-red
+npm i node-red-contrib-near-protocol
 ```
 
 ### Create your first flow
